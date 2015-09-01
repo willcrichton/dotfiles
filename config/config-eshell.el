@@ -8,6 +8,12 @@
     (eshell-send-input)))
 
 (add-hook
+ 'comint-mode-hook
+ (lambda ()
+   (define-key comint-mode-map "\t" 'company-complete)))
+
+
+(add-hook
  'eshell-mode-hook
  '(lambda()
     ;; Commands that heavily modify the terminal like top or vim sometimes needs to be
@@ -18,7 +24,15 @@
     (add-to-list
      'eshell-visual-subcommands
      '("git" "log" "diff" "show"))
-    (local-set-key (kbd "C-l") 'eshell-clear-buffer)))
+
+    ;; C-l is like running "clear" in a terminal
+    (local-set-key (kbd "C-l") 'eshell-clear-buffer)
+
+    ;; Reasonable autocompletion
+    (setq pcomplete-cycle-completions nil)
+
+    ;; Some executables like ocamlbuild use `tput` which needs this in eshell
+    (setenv "TERM" "dumb")))
 
 ;; M-x make-shell for multiple shells in one emacs instance
 (defun make-shell (name)
@@ -35,7 +49,7 @@
 (add-to-list 'eshell-command-aliases-list '("gst" "magit-status"))
 (add-to-list 'eshell-command-aliases-list '("emacs" "find-file $1"))
 
-;; BEGIN CUSTOM ESHELL COMMAND PROMPT ;;
+;; BEGIN CUSTOM ESHELL COMMAND PROMPT
 (setq eshell-history-size 1024)
 (setq eshell-prompt-regexp "^[^#$]*[#$] ")
 
@@ -48,9 +62,6 @@
                                         ;(message "eshell-ask-to-save-history is %s" eshell-ask-to-save-history)
 
 (defun eshell/ef (fname-regexp &rest dir) (ef fname-regexp default-directory))
-
-
-;;; ---- path manipulation
 
 (defun pwd-repl-home (pwd)
   (interactive)
@@ -67,13 +78,14 @@
 PWD is not in a git repo (or the git command is not found)."
   (interactive)
   (when (and (eshell-search-path "git")
-             (locate-dominating-file pwd ".git"))
-    (let ((git-output (shell-command-to-string (concat "cd " pwd " && git branch | grep '\\*' | sed -e 's/^\\* //'"))))
+             (locate-dominating-file pwd ".git")
+             (not (tramp-tramp-file-p pwd)))
+    (let ((git-output (shell-command-to-string (concat "cd \"" pwd "\" && git branch | grep '\\*' | sed -e 's/^\\* //'"))))
       (propertize (concat "["
                           (if (> (length git-output) 0)
                               (substring git-output 0 -1)
                             "(no branch)")
-                          "]") 'face `(:foreground "green"))
+                          "]") 'face `(:foreground "DarkOliveGreen3"))
       )))
 
 (setq eshell-prompt-function
@@ -93,9 +105,12 @@ PWD is not in a git repo (or the git command is not found)."
                           (mapconcat (lambda (elm) elm)
                                      p-lst
                                      "/")))
-                      (split-string (pwd-repl-home (eshell/pwd)) "/")) 'face `(:foreground "yellow"))
+                      (split-string (pwd-repl-home (eshell/pwd)) "/"))
+                     'face `(:foreground "NavajoWhite1"))
          (or (curr-dir-git-branch-string (eshell/pwd)))
          (propertize "# " 'face 'default))))
 
 (setq eshell-highlight-prompt nil)
 ;; END CUSTOM ESHELL PROMPT ;;
+
+(provide 'config-eshell)
