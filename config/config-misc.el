@@ -23,8 +23,7 @@
 ;; Replacement for other-window (C-x o) that splits the window if it doesn't exist yet
 (defun other-window-or-split ()
   (interactive)
-  (when (one-window-p)
-    (split-window-horizontally))
+  (when (one-window-p) (split-window-horizontally))
   (other-window 1))
 
 (global-set-key (kbd "C-j") 'other-window-or-split)
@@ -44,38 +43,13 @@
 (setq tramp-default-method "ssh")
 
 ;; Org-mode indents with headings
-(add-hook
- 'org-mode-hook
- '(lambda ()
-    (org-indent-mode t)))
-
-;; Don't put customizations into our beautiful .emacs
-(let ((custom-path "~/.emacs-custom.el"))
-  (if (not (file-exists-p custom-path))
-      (with-temp-buffer (write-file custom-path)))
-  (setq custom-file custom-path)
-  (load custom-file))
-
-;; Go back to where you were if you close a file
-(require 'saveplace)
-(setq-default save-place t)
-
-;; Ensure we have ANSI colors in emacs
-(require 'ansi-color)
-(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
-(add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
-(add-hook 'eshell-preoutput-filter-functions 'ansi-color-filter-apply)
+(add-hook 'org-mode-hook '(lambda () (org-indent-mode t)))
 
 ;; Show column numbers in tool bar
 (column-number-mode t)
 
-;; Highlight lines over 100 characters
-(require 'whitespace)
-(setq whitespace-line-column 100)
-(setq whitespace-style '(face lines-tail))
-(add-hook 'prog-mode-hook 'whitespace-mode)
-
-(add-hook 'css-mode-hook '(lambda() (setq css-indent-offset 2)))
+;; Show line numbers
+(global-linum-mode t)
 
 ;; Disable scrollbars if they exists
 (if (boundp 'scroll-bar-mode)

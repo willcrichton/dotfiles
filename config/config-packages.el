@@ -1,13 +1,37 @@
+;; PRE-INIT
+
+;; Don't put customizations into our beautiful .emacs
+(let ((custom-path "~/.emacs-custom.el"))
+  (if (not (file-exists-p custom-path))
+      (with-temp-buffer (write-file custom-path)))
+  (setq custom-file custom-path)
+  (load custom-file))
+
+;; M-x make-shell for multiple shells in one emacs instance
+(defun make-shell (name)
+  "Create a shell buffer named NAME."
+  (interactive "sName: ")
+  (setq name (concat "$" name))
+  (eshell)
+  (rename-buffer name))
+
+;; Ignore dumb AD warnings
+(setq ad-redefinition-action 'accept)
+
 ;; Set up package management, adding various sources to search
-(package-initialize nil)
-(add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/"))
-(add-to-list 'package-archives
-             '("melpa-stable" . "http://stable.melpa.org/packages/"))
-(add-to-list 'package-archives
-             '("org" . "http://orgmode.org/elpa/"))
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/") t)
+(package-initialize)
+(add-to-list
+ 'package-archives
+ '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list
+ 'package-archives
+ '("melpa-stable" . "http://stable.melpa.org/packages/"))
+(add-to-list
+ 'package-archives
+ '("org" . "http://orgmode.org/elpa/"))
+(add-to-list
+ 'package-archives
+ '("melpa" . "http://melpa.org/packages/") t)
 
 ;; Get the "use-package" package for simple package configuration
 (unless (package-installed-p 'use-package)
@@ -64,29 +88,25 @@
 ;; Projectile for large project utilities
 (use-package projectile
   :diminish projectile-mode
-  :init
+  :config
   (progn
     (projectile-global-mode t)
-    (setq projectile-completion-system 'helm))
-  :init
-  (use-package helm-projectile
-    :bind ("C-x f" . helm-projectile-find-file)
-    :config (helm-projectile-on)))
+    (setq projectile-completion-system 'helm)
+    (use-package helm-projectile
+      :bind ("C-x f" . helm-projectile-find-file)
+      :config (helm-projectile-on))))
 
 ;; Better text replacement
-(use-package visual-regexp
-  :bind (("C-c r" . vr/query-replace)))
+(use-package visual-regexp :bind (("C-c r" . vr/query-replace)))
 
 ;; To see matching delimiters in pretty colors
-(use-package rainbow-delimiters
-  :config (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+(use-package rainbow-delimiters :config (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
 ;; Auto-upload gists to Github -- see https://github.com/defunkt/gist.el
 (use-package gist)
 
 ;; Who doesn't love zenburn?
-(use-package zenburn-theme
-  :config (load-theme 'zenburn t))
+(use-package zenburn-theme :config (load-theme 'zenburn t))
 
 ;; Fancy mode line
 (use-package powerline
@@ -100,13 +120,14 @@
 ;; Workspace management
 (use-package perspective
   :config
-  (setq eshell-counter 0)
-  (add-hook
-   'persp-created-hook
-   '(lambda()
-      (make-shell (concat "*eshell" (number-to-string eshell-counter) "*"))
-      (setq eshell-counter (+ eshell-counter 1))))
-  (persp-mode t))
+  (progn
+    (setq eshell-counter 0)
+    (add-hook
+     'persp-created-hook
+     '(lambda()
+        (make-shell (concat "*eshell" (number-to-string eshell-counter) "*"))
+        (setq eshell-counter (+ eshell-counter 1))))
+    (persp-mode t)))
 
 ;; Load in environment variables to shells we use
 (use-package exec-path-from-shell
@@ -115,6 +136,25 @@
     (mapc 'exec-path-from-shell-copy-env
           '("LD_LIBRARY_PATH" "DYLD_LIBRARY_PATH" "CAML_LD_LIBRARY_PATH"))
     (exec-path-from-shell-initialize)))
+
+;; Go back to where you were if you close a file
+(use-package saveplace :config (setq-default save-place t))
+
+;; Ensure we have ANSI colors in emacs
+(use-package ansi-color
+  :config
+  (progn
+    (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+    (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
+    (add-hook 'eshell-preoutput-filter-functions 'ansi-color-filter-apply)))
+
+;; Highlight lines over 100 characters
+(use-package whitespace
+  :config
+  (progn
+    (setq whitespace-line-column 100)
+    (setq whitespace-style '(face lines-tail))
+    (add-hook 'prog-mode-hook 'whitespace-mode)))
 
 ;; Language-specific syntax highlighting
 (use-package js2-mode     :mode ("\\.js$"     . js2-mode))
@@ -126,8 +166,8 @@
 (use-package haskell-mode :mode ("\\.hs$"     . haskell-mode))
 (use-package coffee-mode  :mode ("\\.coffee$" . coffee-mode))
 (use-package tuareg       :mode ("\\.mli?$"   . tuareg-mode)
-  :config
-  (use-package ocp-indent))
+  :config (use-package ocp-indent))
+
 
 ;; Language-specific extensions
 (use-package merlin
@@ -149,7 +189,6 @@
       :config (add-to-list 'company-backends 'company-tern))))
 
 ;; Autocompletion for Python
-(use-package company-jedi
-  :config (add-to-list 'company-backends 'company-jedi))
+(use-package company-jedi :config (add-to-list 'company-backends 'company-jedi))
 
 (provide 'config-packages)

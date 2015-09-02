@@ -8,12 +8,6 @@
     (eshell-send-input)))
 
 (add-hook
- 'comint-mode-hook
- (lambda ()
-   (define-key comint-mode-map "\t" 'company-complete)))
-
-
-(add-hook
  'eshell-mode-hook
  '(lambda()
     ;; Commands that heavily modify the terminal like top or vim sometimes needs to be
@@ -34,20 +28,18 @@
     ;; Some executables like ocamlbuild use `tput` which needs this in eshell
     (setenv "TERM" "dumb")))
 
-;; M-x make-shell for multiple shells in one emacs instance
-(defun make-shell (name)
-  "Create a shell buffer named NAME."
-  (interactive "sName: ")
-  (setq name (concat "$" name))
-  (eshell)
-  (rename-buffer name))
-
 (global-set-key (kbd "C-c C-u") 'eshell)
 
 ;; Various convenient aliases
 (require 'em-alias)
-(add-to-list 'eshell-command-aliases-list '("gst" "magit-status"))
-(add-to-list 'eshell-command-aliases-list '("emacs" "find-file $1"))
+(setq
+ eshell-command-aliases-list
+ (append
+  eshell-command-aliases-list
+  '('("gst" "magit-status")
+    '("emacs" "find-file $1")
+    '("e" "find-file $1")
+    '("clear" "eshell-clear-buffer"))))
 
 ;; BEGIN CUSTOM ESHELL COMMAND PROMPT
 (setq eshell-history-size 1024)
