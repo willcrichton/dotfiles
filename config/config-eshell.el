@@ -48,12 +48,14 @@
    'eshell-mode-hook
    '(lambda ()
       ;; Use helm's autocomplete. "<tab>" is for GUI, "TAB" is for terminal
-      (define-key eshell-mode-map (kbd "<tab>") 'helm-esh-pcomplete)
-      (define-key eshell-mode-map (kbd "TAB") 'helm-esh-pcomplete)
+      ;; (define-key eshell-mode-map (kbd "<tab>") 'helm-esh-pcomplete)
+      ;; (define-key eshell-mode-map (kbd "TAB") 'helm-esh-pcomplete)
+
+      ;; Reasonable autocompletion
+      (setq pcomplete-cycle-completions nil)
 
       ;; Like C-r in regular shell (but better!)
-      (define-key eshell-mode-map (kbd "M-r") 'helm-eshell-history)
-      ))
+      (define-key eshell-mode-map (kbd "M-r") 'helm-eshell-history)))
 
   ;; M-x make-shell for multiple shells in one emacs instance
   (defun make-shell (name)
@@ -82,13 +84,14 @@
   ;; Workspace management
   ;; Note that we put this here and not in config-packages because it depends on
   ;; custom functions here
-  (use-package perspective
-    :config
-    (progn
-      (persp-turn-off-modestring)
-      (add-hook
-       'persp-created-hook
-       '(lambda () (make-shell (eshell-curr-name))))
-      (persp-mode t))))
+  (if (server-running-p)
+      (use-package perspective
+        :config
+        (progn
+          (persp-turn-off-modestring)
+          (add-hook
+           'persp-created-hook
+           '(lambda () (make-shell (eshell-curr-name))))
+          (persp-mode t)))))
 
 (provide 'config-eshell)

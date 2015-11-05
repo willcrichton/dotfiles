@@ -45,7 +45,7 @@
 (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
 
 ;; Org-mode indents with headings
-(add-hook 'org-mode-hook '(lambda () (org-indent-mode t)))
+(add-hook 'org-mode-hook 'org-indent-mode)
 
 ;; Show line/column numbers in tool bar
 (line-number-mode t)
@@ -54,27 +54,7 @@
 ;; Only on graphical systems
 (when (window-system)
   ;; Confirm before exiting
-  (setq confirm-kill-emacs 'yes-or-no-p)
-
-  ;; Show line numbers
-  (add-hook 'prog-mode-hook '(lambda () (linum-mode t))))
-
-;; Disable a bunch of bars
-(when (functionp 'menu-bar-mode)
-  (menu-bar-mode -1))
-(when (functionp 'set-scroll-bar-mode)
-  (set-scroll-bar-mode 'nil))
-(when (functionp 'mouse-wheel-mode)
-  (mouse-wheel-mode -1))
-(when (functionp 'tooltip-mode)
-  (tooltip-mode -1))
-(when (functionp 'tool-bar-mode)
-  (tool-bar-mode -1))
-(when (functionp 'blink-cursor-mode)
-  (blink-cursor-mode -1))
-
-;; Always fullscreen when we open emacs
-(set-frame-parameter nil 'fullscreen 'fullboth)
+  (setq confirm-kill-emacs 'yes-or-no-p))
 
 ;; Disable blinking cursor
 (blink-cursor-mode 0)
@@ -87,7 +67,7 @@
 
 ;; Make some symbols prettier, e.g. "fun" becomes a lambda character
 (when (boundp 'global-prettify-symbols-mode)
-  (global-prettify-symbols-mode +1))
+  (global-prettify-symbols-mode t))
 
 ;; OS X specific configuration
 (when (eq system-type 'darwin)
@@ -96,15 +76,22 @@
   (setq mac-option-modifier 'meta)
   (setq mac-command-modifier 'super)
 
-  ;; Use Command-<arrow key> to navigate windows
   (global-set-key (kbd "s-<left>") 'windmove-left)
   (global-set-key (kbd "s-<right>") 'windmove-right)
   (global-set-key (kbd "s-<up>") 'windmove-up)
   (global-set-key (kbd "s-<down>") 'windmove-down)
-
-  ;; Use Command-[c|v|x] as normal cut/paste
   (global-set-key (kbd "s-x") 'kill-region)
   (global-set-key (kbd "s-c") 'kill-ring-save)
-  (global-set-key (kbd "s-v") 'yank))
+  (global-set-key (kbd "s-v") 'yank)
+  (global-set-key (kbd "s-s") 'save-buffer)
+  (global-set-key (kbd "s-a") 'mark-whole-buffer)
+  (global-set-key (kbd "s-z") 'undo)
+  (global-set-key (kbd "s-w") 'kill-this-buffer)
+  (global-set-key (kbd "s-q") 'save-buffers-kill-terminal)
+  (global-set-key (kbd "s-r") 'revert-buffer))
+
+;; If you want to highlight the line containing your cursor
+(add-hook 'prog-mode-hook 'hl-line-mode)
+(setq hl-line-sticky-flag nil)
 
 (provide 'config-misc)
