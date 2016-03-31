@@ -1,4 +1,4 @@
-;; Set up package management, adding various sources to search
+;;; Set up package management, adding various sources to search
 (package-initialize nil)
 (add-to-list
  'package-archives
@@ -86,7 +86,6 @@
   :demand t
   :config (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
-
 ;; Load in environment variables to shells we use
 (use-package exec-path-from-shell
   :config
@@ -116,6 +115,10 @@
     (setq whitespace-style '(face lines-tail))
     (add-hook 'prog-mode-hook 'whitespace-mode)))
 
+(use-package flycheck
+  :demand t
+  :config (global-flycheck-mode))
+
 ;; Language-specific syntax highlighting
 
 (use-package js2-mode     :mode ("\\.js$"     . js2-mode))
@@ -127,6 +130,9 @@
 (use-package haskell-mode :mode ("\\.hs$"     . haskell-mode))
 (use-package coffee-mode  :mode ("\\.coffee$" . coffee-mode))
 (use-package tuareg       :mode ("\\.mli?$"   . tuareg-mode))
+(use-package web-mode     :mode ("\\.html$"   . web-mode))
+(use-package sml-mode     :mode ("\\.sml$"    . sml-mode)
+  :config (setq sml-indent-level 2))
 
 ;; Language-specific extensions
 
@@ -157,4 +163,17 @@
 (use-package company-anaconda
   :config (add-to-list 'company-backends 'company-anaconda))
 
+;; C/C++ mode settings
+(use-package c++-mode
+  :ensure nil
+  :mode ("\\.h$"   . c++-mode)
+  :mode ("\\.inl$" . c++-mode))
+
+(setq c-default-style "k&r")
+(c-set-offset 'innamespace 0) ; No indent in namespace
+(c-set-offset 'arglist-intro '+)
+(c-set-offset 'arglist-close 0)
+(setq c-basic-offset 2)
+
 (provide 'config-packages)
+;;; config-packages.el ends here

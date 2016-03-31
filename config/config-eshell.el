@@ -13,7 +13,7 @@
 
   (append-to-list
    'eshell-visual-commands
-   '("vim" "top" "less"))
+   '("vim" "top" "less" "htop"))
 
   (append-to-list
    'eshell-visual-subcommands
@@ -26,7 +26,75 @@
    '(("gst" "magit-status")
      ("emacs" "find-file $1")
      ("e" "find-file $1")
-     ("clear" "eshell-clear-buffer")))
+     ("clear" "eshell-clear-buffer")
+     ("ssh" "essh $1")))
+
+  (defun remove-remote-prefix (path)
+    (if (epe-remote-p)
+        (let ((trimmed (replace-regexp-in-string "^/ssh:.*:" "" path)))
+          (if (string-equal trimmed "")
+              "/"
+            trimmed))
+      path))
+
+  ;; TODO: replace (remove-remote-prefix default-directory) with ~
+  (defun eshell/pwd-local ()
+    (remove-remote-prefix (eshell/pwd)))
+
+  ;; Improves dakrone by removing redundant info in remote prompts
+  (defun epe-theme-dakrone-plus ()
+    "A eshell-prompt lambda theme with directory shrinking."
+    (setq eshell-prompt-regexp "^[^#\nλ]*[#λ] ")
+    (let* ((pwd-repl-home (lambda (pwd)
+                            (let* ((home (expand-file-name (getenv "HOME")))
+                                   (home-len (length home)))
+                              (if (and
+                                   (>= (length pwd) home-len)
+                                   (equal home (substring pwd 0 home-len)))
+                                  (concat "~" (substring pwd home-len))
+                                pwd))))
+           (shrink-paths (lambda (p-lst)
+                           (if (> (length p-lst) 3) ;; shrink paths deeper than 3 dirs
+                               (concat
+                                (mapconcat (lambda (elm)
+                                             (if (zerop (length elm)) ""
+                                               (substring elm 0 1)))
+                                           (butlast p-lst 3)
+                                           "/")
+                                "/"
+                                (mapconcat (lambda (elm) elm)
+                                           (last p-lst 3)
+                                           "/"))
+                             (mapconcat (lambda (elm) elm)
+                                        p-lst
+                                        "/")))))
+      (concat
+       (when (epe-remote-p)
+         (epe-colorize-with-face
+          (concat (epe-remote-user) "@" (epe-remote-host) " ")
+          'epe-remote-face))
+       (when epe-show-python-info
+         (when (fboundp 'epe-venv-p)
+           (when (and (epe-venv-p) venv-current-name)
+             (epe-colorize-with-face (concat "(" venv-current-name ") ") 'epe-venv-face))))
+       (epe-colorize-with-face (funcall
+                                shrink-paths
+                                (split-string
+                                 (funcall pwd-repl-home (eshell/pwd-local)) "/"))
+                               'epe-dir-face)
+       (when (epe-git-p)
+         (concat
+          (epe-colorize-with-face ":" 'epe-dir-face)
+          (epe-colorize-with-face
+           (concat (epe-git-branch)
+                   (epe-git-dirty)
+                   (epe-git-untracked)
+                   (unless (= (epe-git-unpushed-number) 0)
+                     (concat ":" (number-to-string (epe-git-unpushed-number)))))
+           'epe-git-face)))
+       (epe-colorize-with-face " λ" 'epe-symbol-face)
+       (epe-colorize-with-face (if (= (user-uid) 0) "#" "") 'epe-sudo-symbol-face)
+       " ")))
 
   ;; Make the prompt look pretty
   (use-package eshell-prompt-extras
@@ -37,7 +105,7 @@
       (use-package virtualenvwrapper :demand t)
       (venv-initialize-eshell)
       (autoload 'epe-theme-dakrone "eshell-prompt-extras")
-      (setq eshell-prompt-function 'epe-theme-dakrone)))
+      (setq eshell-prompt-function 'epe-theme-dakrone-plus)))
 
   ;; No welcome banner necessary
   (setq eshell-banner-message "")
@@ -65,26 +133,30 @@
     (rename-buffer name))
 
   ;; Better cd for remote sessions
-  (defun eshell/cdd (&rest args)
-    (let ((path (car args))
-          (prefix (file-remote-p default-directory))
+  (defun eshell/cdd (path)
+    (let* ((prefix (file-remote-p default-directory))
           (home (getenv "HOME")))
       (if prefix
           (if (string-match home path)
-              (eshell/cd (cons prefix (cdr args)))
+              (eshell/cd prefix)
             (if (string-match "^/" path)
-                (eshell/cd (cons (concat prefix "/") (cdr args)))
-              (eshell/cd args))
-            (eshell/cd args))
-        (eshell/cd args))))
+                (eshell/cd (concat prefix path))
+              (eshell/cd path)))
+        (eshell/cd path))))
+
+
+  (defun eshell/essh (name)
+    (eshell/cd (concat "/ssh:" name ":~")))
 
   (defun eshell-curr-name ()
-    (concat "*eshell-" (persp-name persp-curr) "*"))
+    (if (boundp 'persp-curr)
+        (concat "*eshell-" (persp-name persp-curr) "*")
+      "*eshell*"))
 
   ;; Workspace management
   ;; Note that we put this here and not in config-packages because it depends on
   ;; custom functions here
-  (if (server-running-p)
+  (if (window-system)
       (use-package perspective
         :config
         (progn
@@ -92,6 +164,7 @@
           (add-hook
            'persp-created-hook
            '(lambda () (make-shell (eshell-curr-name))))
-          (persp-mode t)))))
+          (persp-mode t)))
+    (make-shell (eshell-curr-name))))
 
 (provide 'config-eshell)
