@@ -136,32 +136,32 @@
 
 ;; Language-specific extensions
 
-;; Utilities for OCaml
-(use-package ocp-indent
-  :config (setq ocp-indent-config "JaneStreet"))
-(use-package merlin
-  :diminish merlin-mode
-  :config
-  (progn
-    (setq opam-share
-          (substring (shell-command-to-string "opam config var share 2> /dev/null")
-                     0 -1))
-    (push (concat opam-share "/emacs/site-lisp") load-path)
-    (add-hook 'tuareg-mode-hook 'merlin-mode)
-    (add-to-list 'company-backends 'merlin-company-backend)))
+;; ;; Utilities for OCaml
+;; (use-package ocp-indent
+;;   :config (setq ocp-indent-config "JaneStreet"))
+;; (use-package merlin
+;;   :diminish merlin-mode
+;;   :config
+;;   (progn
+;;     (setq opam-share
+;;           (substring (shell-command-to-string "opam config var share 2> /dev/null")
+;;                      0 -1))
+;;     (push (concat opam-share "/emacs/site-lisp") load-path)
+;;     (add-hook 'tuareg-mode-hook 'merlin-mode)
+;;     (add-to-list 'company-backends 'merlin-company-backend)))
 
-;; Typing for Javascript
-(use-package tern
-  :config
-  (progn
-    (add-hook 'js2-mode-hook 'tern-mode)
-    (setq tern-command '("cmd" "/c" "tern"))))
-(use-package company-tern :config (add-to-list 'company-backends 'company-tern))
+;; ;; Typing for Javascript
+;; (use-package tern
+;;   :config
+;;   (progn
+;;     (add-hook 'js2-mode-hook 'tern-mode)
+;;     (setq tern-command '("cmd" "/c" "tern"))))
+;; (use-package company-tern :config (add-to-list 'company-backends 'company-tern))
 
-;; Autocompletion for Python
-(use-package anaconda-mode :config (add-hook 'python-mode-hook 'anaconda-mode))
-(use-package company-anaconda
-  :config (add-to-list 'company-backends 'company-anaconda))
+;; ;; Autocompletion for Python
+;; (use-package anaconda-mode :config (add-hook 'python-mode-hook 'anaconda-mode))
+;; (use-package company-anaconda
+;;   :config (add-to-list 'company-backends 'company-anaconda))
 
 ;; C/C++ mode settings
 (use-package c++-mode
