@@ -30,14 +30,15 @@
 
 (if (window-system)
     (progn
-      ;; (use-package zenburn-theme :config (load-theme 'zenburn t))
+      ;; Mmm... sandy
       (use-package solarized-theme :config (load-theme 'solarized-light t))
 
       ;; Show line numbers
       (add-hook 'prog-mode-hook 'linum-mode)
 
       ;; Always fullscreen when we open emacs
-      (set-frame-parameter nil 'fullscreen 'fullboth)
+      (setq ns-auto-hide-menu-bar t)
+      (set-frame-parameter nil 'fullscreen 'maximized)
 
       (sml/apply-theme 'automatic))
   (progn

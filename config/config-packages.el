@@ -26,10 +26,9 @@
 (use-package company
   :demand t
   :bind (("C-." . company-complete))
-  :diminish company-mode
-  :config (add-hook 'prog-mode-hook 'company-mode))
+  :diminish company-mode)
 
-;; Helm for file navigation
+;; Helm for file navigation and autocomplete UI
 (use-package helm
   :demand t
   :diminish helm-mode
@@ -52,7 +51,8 @@
           helm-M-x-fuzzy-match t)
     (helm-mode)))
 
-(use-package helm-ag)
+;; Search through uses of a phrase in the same file
+;; M-x helm-swoop
 (use-package helm-swoop)
 
 ;; Projectile for large project utilities
@@ -66,7 +66,8 @@
     (setq projectile-enable-caching t)))
 
 (use-package helm-projectile
-  :bind ("C-x f" . helm-projectile-find-file)
+  :bind (("C-x f" . helm-projectile-find-file)
+         ("C-x g" . helm-projectile-grep))
   :config (helm-projectile-on))
 
 ;; Paradox for better package viewing (use M-x paradox-list-packages)
@@ -89,7 +90,7 @@
 ;; Load in environment variables to shells we use
 (use-package exec-path-from-shell
   :config
-  (when (memq window-system '(mac ns))
+  (when (memq window-system '(mac ns x))
     (mapc 'exec-path-from-shell-copy-env
           '("LD_LIBRARY_PATH" "DYLD_LIBRARY_PATH" "CAML_LD_LIBRARY_PATH"))
     (exec-path-from-shell-initialize)))
@@ -115,65 +116,47 @@
     (setq whitespace-style '(face lines-tail))
     (add-hook 'prog-mode-hook 'whitespace-mode)))
 
-(use-package flycheck
-  :demand t
-  :config (global-flycheck-mode))
-
 ;; Language-specific syntax highlighting
-
-(use-package js2-mode     :mode ("\\.js$"     . js2-mode))
-(use-package python-mode  :mode ("\\.py$"     . python-mode))
 (use-package scss-mode    :mode ("\\.scss$"   . scss-mode))
 (use-package rust-mode    :mode ("\\.rs$"     . rust-mode))
 (use-package go-mode      :mode ("\\.go$"     . go-mode))
 (use-package lua-mode     :mode ("\\.lua$"    . lua-mode))
 (use-package haskell-mode :mode ("\\.hs$"     . haskell-mode))
-(use-package coffee-mode  :mode ("\\.coffee$" . coffee-mode))
 (use-package tuareg       :mode ("\\.mli?$"   . tuareg-mode))
-(use-package web-mode     :mode ("\\.html$"   . web-mode))
-(use-package sml-mode     :mode ("\\.sml$"    . sml-mode)
+(use-package web-mode     :mode ("\\.((html)|(jsx?)|(php))$"   . web-mode))
+(use-package sml-mode
+  :mode ("\\.sml$"    . sml-mode)
   :config (setq sml-indent-level 2))
-
-;; Language-specific extensions
-
-;; ;; Utilities for OCaml
-;; (use-package ocp-indent
-;;   :config (setq ocp-indent-config "JaneStreet"))
-;; (use-package merlin
-;;   :diminish merlin-mode
-;;   :config
-;;   (progn
-;;     (setq opam-share
-;;           (substring (shell-command-to-string "opam config var share 2> /dev/null")
-;;                      0 -1))
-;;     (push (concat opam-share "/emacs/site-lisp") load-path)
-;;     (add-hook 'tuareg-mode-hook 'merlin-mode)
-;;     (add-to-list 'company-backends 'merlin-company-backend)))
-
-;; ;; Typing for Javascript
-;; (use-package tern
-;;   :config
-;;   (progn
-;;     (add-hook 'js2-mode-hook 'tern-mode)
-;;     (setq tern-command '("cmd" "/c" "tern"))))
-;; (use-package company-tern :config (add-to-list 'company-backends 'company-tern))
-
-;; ;; Autocompletion for Python
-;; (use-package anaconda-mode :config (add-hook 'python-mode-hook 'anaconda-mode))
-;; (use-package company-anaconda
-;;   :config (add-to-list 'company-backends 'company-anaconda))
-
-;; C/C++ mode settings
 (use-package c++-mode
   :ensure nil
   :mode ("\\.h$"   . c++-mode)
-  :mode ("\\.inl$" . c++-mode))
+  :mode ("\\.inl$" . c++-mode)
+  :config
+  (progn
+    (setq c-default-style "k&r")
+    (c-set-offset 'innamespace 0) ; No indent in namespace
+    (c-set-offset 'arglist-intro '+)
+    (c-set-offset 'arglist-close 0)
+    (setq c-basic-offset 2)))
 
-(setq c-default-style "k&r")
-(c-set-offset 'innamespace 0) ; No indent in namespace
-(c-set-offset 'arglist-intro '+)
-(c-set-offset 'arglist-close 0)
-(setq c-basic-offset 2)
+;; Language-specific extensions
+
+;; Python auto-formatting
+(use-package py-yapf
+  :config (add-hook 'python-mode-hook 'py-yapf-enable-on-save))
+
+;; Utilities for OCaml
+(use-package ocp-indent
+  :config (setq ocp-indent-config "JaneStreet"))
+(use-package merlin
+  :diminish merlin-mode
+  :config
+  (progn
+    (setq opam-share
+          (substring (shell-command-to-string "opam config var share 2> /dev/null")
+                     0 -1))
+    (push (concat opam-share "/emacs/site-lisp") load-path)
+    (add-hook 'tuareg-mode-hook 'merlin-mode)
+    (add-to-list 'company-backends 'merlin-company-backend)))
 
 (provide 'config-packages)
-;;; config-packages.el ends here

@@ -94,19 +94,10 @@
   (global-set-key (kbd "s-{") 'persp-prev)
   (global-set-key (kbd "s-}") 'persp-next)
   (global-set-key (kbd "s-t") 'persp-switch)
-  ;; TODO: should kill current perspective w/o prompt
   (global-set-key (kbd "s-w") 'persp-kill))
 
 ;; If you want to highlight the line containing your cursor
 (add-hook 'prog-mode-hook 'hl-line-mode)
 (setq hl-line-sticky-flag nil)
-
-(setq c-default-style "k&r")
-(c-set-offset 'innamespace 0) ; No indent in namespace
-(c-set-offset 'arglist-intro '+)
-(c-set-offset 'arglist-close 0)
-(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
-(setq c-basic-offset 2)
 
 (provide 'config-misc)

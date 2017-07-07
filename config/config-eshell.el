@@ -2,7 +2,10 @@
 (require 'eshell)
 (with-eval-after-load "esh-opt"
 
+  ;; Allow me to erase the buffer
   (put 'erase-buffer 'disabled nil)
+
+  ;; Defines "clear" command
   (defun eshell-clear-buffer ()
     "Clear terminal"
     (interactive)
@@ -11,6 +14,7 @@
 
   (require 'em-term)
 
+  ;; Make these commands show in a separate window
   (append-to-list
    'eshell-visual-commands
    '("vim" "top" "less" "htop"))
@@ -104,6 +108,7 @@
       ;; TODO: virtualenvwrapper doesn't seem to work
       (use-package virtualenvwrapper :demand t)
       (venv-initialize-eshell)
+      (setq venv-location '("~/.env"))
       (autoload 'epe-theme-dakrone "eshell-prompt-extras")
       (setq eshell-prompt-function 'epe-theme-dakrone-plus)))
 
@@ -115,10 +120,6 @@
   (add-hook
    'eshell-mode-hook
    '(lambda ()
-      ;; Use helm's autocomplete. "<tab>" is for GUI, "TAB" is for terminal
-      ;; (define-key eshell-mode-map (kbd "<tab>") 'helm-esh-pcomplete)
-      ;; (define-key eshell-mode-map (kbd "TAB") 'helm-esh-pcomplete)
-
       ;; Reasonable autocompletion
       (setq pcomplete-cycle-completions nil)
 
