@@ -112,7 +112,7 @@
   :diminish whitespace-mode
   :config
   (progn
-    (setq whitespace-line-column 80)
+    (setq whitespace-line-column 120)
     (setq whitespace-style '(face lines-tail))
     (add-hook 'prog-mode-hook 'whitespace-mode)))
 
@@ -123,7 +123,9 @@
 (use-package lua-mode     :mode ("\\.lua$"    . lua-mode))
 (use-package haskell-mode :mode ("\\.hs$"     . haskell-mode))
 (use-package tuareg       :mode ("\\.mli?$"   . tuareg-mode))
-(use-package web-mode     :mode ("\\.((html)|(jsx?)|(php))$"   . web-mode))
+(use-package web-mode     :mode ("\\.(html|jsx?|php)$"   . web-mode))
+(use-package yaml-mode)
+(use-package toml-mode)
 (use-package sml-mode
   :mode ("\\.sml$"    . sml-mode)
   :config (setq sml-indent-level 2))
@@ -145,18 +147,18 @@
 (use-package py-yapf
   :config (add-hook 'python-mode-hook 'py-yapf-enable-on-save))
 
-;; Utilities for OCaml
-(use-package ocp-indent
-  :config (setq ocp-indent-config "JaneStreet"))
-(use-package merlin
-  :diminish merlin-mode
-  :config
-  (progn
-    (setq opam-share
-          (substring (shell-command-to-string "opam config var share 2> /dev/null")
-                     0 -1))
-    (push (concat opam-share "/emacs/site-lisp") load-path)
-    (add-hook 'tuareg-mode-hook 'merlin-mode)
-    (add-to-list 'company-backends 'merlin-company-backend)))
+;; ;; Utilities for OCaml
+;; (use-package ocp-indent
+;;   :config (setq ocp-indent-config "JaneStreet"))
+;; (use-package merlin
+;;   :diminish merlin-mode
+;;   :config
+;;   (progn
+;;     (setq opam-share
+;;           (substring (shell-command-to-string "opam config var share 2> /dev/null")
+;;                      0 -1))
+;;     (push (concat opam-share "/emacs/site-lisp") load-path)
+;;     (add-hook 'tuareg-mode-hook 'merlin-mode)
+;;     (add-to-list 'company-backends 'merlin-company-backend)))
 
 (provide 'config-packages)

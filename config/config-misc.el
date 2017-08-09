@@ -13,6 +13,9 @@
 ;; Don't need to display anything on startup
 (setq inhibit-startup-message t)
 
+;; Make copy-pasting work correctly on OS X (don't add extra tabs)
+(electric-indent-mode 0)
+
 ;; 2-space tabs
 (setq-default
  tab-width 2
