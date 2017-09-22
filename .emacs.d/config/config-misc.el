@@ -16,6 +16,9 @@
 ;; Make copy-pasting work correctly on OS X (don't add extra tabs)
 (electric-indent-mode 0)
 
+;; Don't prompt about abbrevs on install
+(setq save-abbrevs nil)
+
 ;; 2-space tabs
 (setq-default
  tab-width 2
