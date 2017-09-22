@@ -21,7 +21,7 @@
 
   (append-to-list
    'eshell-visual-subcommands
-   '('("git" "log" "diff" "show")))
+   '(("git" "log" "diff" "show")))
 
   ;; Various convenient aliases
   (require 'em-alias)

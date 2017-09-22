@@ -74,10 +74,10 @@
 (use-package paradox :config (setq paradox-execute-asynchronously t))
 
 ;; Better text replacement
-(use-package visual-regexp :bind (("C-c r" . vr/query-replace)))
+(use-package visual-regexp :bind (("M-%" . vr/query-replace)))
 
 ;; Magit for git integrated to emacs
-(use-package magit)
+(use-package magit :bind (("C-c C-g" . magit-status)))
 
 ;; Auto-upload gists to Github -- see https://github.com/defunkt/gist.el
 (use-package gist)
@@ -98,15 +98,6 @@
 ;; Go back to where you were if you close a file
 (use-package saveplace :config (setq-default save-place t))
 
-;; ;; Ensure we have ANSI colors in emacs
-;; (use-package ansi-color
-;;   :config
-;;   (progn
-;;     (require 'eshell)
-;;     (add-hook 'eshell-mode-hook 'ansi-color-for-comint-mode-on)
-;;     (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
-;;     (add-hook 'eshell-preoutput-filter-functions 'ansi-color-filter-apply)))
-
 ;; Highlight lines over N characters
 (use-package whitespace
   :diminish whitespace-mode
@@ -125,6 +116,7 @@
 (use-package web-mode     :mode ("\\.(html|jsx?|php)$" . web-mode))
 (use-package yaml-mode)
 (use-package toml-mode)
+(use-package markdown-mode)
 (use-package sml-mode
   :mode ("\\.sml$" . sml-mode)
   :config (setq sml-indent-level 2))
