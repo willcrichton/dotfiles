@@ -1,0 +1,6 @@
+[user]
+	name = Will Crichton
+  email = wcrichto@cs.stanford.edu
+
+[push]
+	default = simple

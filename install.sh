@@ -6,4 +6,4 @@ for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do
     ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"
 done
 
-cp -r .emacs.d ~/.emacs.d
+cp -r -f .emacs.d .gitignore .gitconfig .zshrc $HOME
