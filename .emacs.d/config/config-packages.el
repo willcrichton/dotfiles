@@ -120,14 +120,13 @@
 (use-package scss-mode    :mode ("\\.scss$"   . scss-mode))
 (use-package rust-mode    :mode ("\\.rs$"     . rust-mode))
 (use-package go-mode      :mode ("\\.go$"     . go-mode))
-(use-package lua-mode     :mode ("\\.lua$"    . lua-mode))
 (use-package haskell-mode :mode ("\\.hs$"     . haskell-mode))
 (use-package tuareg       :mode ("\\.mli?$"   . tuareg-mode))
-(use-package web-mode     :mode ("\\.(html|jsx?|php)$"   . web-mode))
+(use-package web-mode     :mode ("\\.(html|jsx?|php)$" . web-mode))
 (use-package yaml-mode)
 (use-package toml-mode)
 (use-package sml-mode
-  :mode ("\\.sml$"    . sml-mode)
+  :mode ("\\.sml$" . sml-mode)
   :config (setq sml-indent-level 2))
 (use-package c++-mode
   :ensure nil
@@ -140,6 +139,10 @@
     (c-set-offset 'arglist-intro '+)
     (c-set-offset 'arglist-close 0)
     (setq c-basic-offset 2)))
+(use-package lua-mode
+  :bind (("C-c C-r" . lua-send-region))
+  :config (setq lua-indent-level 2))
+
 
 ;; Language-specific extensions
 
@@ -147,18 +150,22 @@
 (use-package py-yapf
   :config (add-hook 'python-mode-hook 'py-yapf-enable-on-save))
 
-;; ;; Utilities for OCaml
-;; (use-package ocp-indent
-;;   :config (setq ocp-indent-config "JaneStreet"))
-;; (use-package merlin
-;;   :diminish merlin-mode
-;;   :config
-;;   (progn
-;;     (setq opam-share
-;;           (substring (shell-command-to-string "opam config var share 2> /dev/null")
-;;                      0 -1))
-;;     (push (concat opam-share "/emacs/site-lisp") load-path)
-;;     (add-hook 'tuareg-mode-hook 'merlin-mode)
-;;     (add-to-list 'company-backends 'merlin-company-backend)))
+;; Utilities for OCaml
+(use-package ocp-indent
+  :config (setq ocp-indent-config "JaneStreet"))
+(use-package merlin
+  :diminish merlin-mode
+  :config
+  (progn
+    (let ((opam-share (ignore-errors (car (process-lines "opam" "config" "var" "share")))))
+      (when (and opam-share (file-directory-p opam-share))
+        ;; Register Merlin
+        (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
+        (autoload 'merlin-mode "merlin" nil t nil)
+        ;; Automatically start it in OCaml buffers
+        (add-hook 'tuareg-mode-hook 'merlin-mode t)
+        (add-hook 'caml-mode-hook 'merlin-mode t)
+        ;; Use opam switch to lookup ocamlmerlin binary
+        (setq merlin-command 'opam)))))
 
 (provide 'config-packages)
