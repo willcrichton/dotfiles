@@ -74,7 +74,10 @@
 (use-package paradox :config (setq paradox-execute-asynchronously t))
 
 ;; Better text replacement
-(use-package visual-regexp :bind (("M-%" . vr/query-replace)))
+(use-package visual-regexp
+  :bind (("M-%" . vr/query-replace))
+  :config
+  (use-package visual-regexp-steroids))
 
 ;; Magit for git integrated to emacs
 (use-package magit :bind (("C-c C-g" . magit-status)))
@@ -112,7 +115,9 @@
 (use-package rust-mode    :mode ("\\.rs$"     . rust-mode))
 (use-package go-mode      :mode ("\\.go$"     . go-mode))
 (use-package haskell-mode :mode ("\\.hs$"     . haskell-mode))
-(use-package tuareg       :mode ("\\.mli?$"   . tuareg-mode))
+(use-package tuareg
+  :mode ("\\.mli?$"   . tuareg-mode)
+  :bind (("C-c C-t" . tuareg-eval-region)))
 (use-package web-mode     :mode ("\\.(html|jsx?|php)$" . web-mode))
 (use-package yaml-mode)
 (use-package toml-mode)
@@ -159,5 +164,6 @@
         (add-hook 'caml-mode-hook 'merlin-mode t)
         ;; Use opam switch to lookup ocamlmerlin binary
         (setq merlin-command 'opam)))))
+
 
 (provide 'config-packages)
