@@ -39,12 +39,19 @@
       (make-shell name))
     (switch-to-buffer name)))
 
+(defun backward-delete-word (arg)
+  "Delete characters backward until encountering the beginning of a word.
+With argument ARG, do this that many times."
+  (interactive "p")
+  (delete-region (point) (progn (backward-word arg) (point))))
+
 ;; Useful keybindings
 (global-set-key (kbd "C-x o") 'other-window-or-split)
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
 (global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
 (global-set-key (kbd "C-c g") 'rgrep)
 (global-set-key (kbd "C-x m") 'switch-to-eshell)
+(global-set-key (kbd "M-DEL") 'backward-delete-word)
 
 ;; Delete trailing whitespace when you save a file
 (add-hook 'before-save-hook 'delete-trailing-whitespace)

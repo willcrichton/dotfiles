@@ -118,7 +118,7 @@
 (use-package tuareg
   :mode ("\\.mli?$"   . tuareg-mode)
   :bind (("C-c C-t" . tuareg-eval-region)))
-(use-package web-mode     :mode ("\\.(html|jsx?|php)$" . web-mode))
+(use-package web-mode     :mode ("\\.((html)|(jsx?)|(php))$" . web-mode))
 (use-package yaml-mode)
 (use-package toml-mode)
 (use-package markdown-mode)

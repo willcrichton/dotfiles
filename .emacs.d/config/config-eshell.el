@@ -17,7 +17,7 @@
   ;; Make these commands show in a separate window
   (append-to-list
    'eshell-visual-commands
-   '("vim" "top" "less" "htop"))
+   '("vim" "top" "less" "htop" "swipl" "lua" "gdb" "lldb" "aspell"))
 
   (append-to-list
    'eshell-visual-subcommands
