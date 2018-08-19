@@ -30,6 +30,7 @@
                         :underline nil)))
 
 (if (window-system)
+
     (progn
       ;; Mmm... sandy
       (use-package solarized-theme :config (load-theme 'solarized-light t))
@@ -37,13 +38,22 @@
       ;; Show line numbers
       (add-hook 'prog-mode-hook 'linum-mode)
 
-      ;; Always fullscreen when we open emacs
-      (setq ns-auto-hide-menu-bar t)
-      (set-frame-parameter nil 'fullscreen 'maximized)
+      ;; Change status bar theme
+      (sml/apply-theme 'automatic)
 
-      (sml/apply-theme 'automatic))
+      ;; Confirm before exiting
+      (setq confirm-kill-emacs 'yes-or-no-p)
+
+      ;; Use "windowed" fullscreen instead of normal fullscreen
+      (setq ns-use-native-fullscreen nil)
+      (toggle-frame-maximized)
+
+      (set-face-attribute 'default nil :height 160)
+      )
+
   (progn
-    (load-theme 'tsdh-light t)))
+    (load-theme 'tsdh-light t)
+    ))
 
 ;; Eshell command prompt customizations
 (custom-set-faces

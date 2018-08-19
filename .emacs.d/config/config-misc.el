@@ -67,11 +67,6 @@ With argument ARG, do this that many times."
 (line-number-mode t)
 (column-number-mode t)
 
-;; Only on graphical systems
-(when (window-system)
-  ;; Confirm before exiting
-  (setq confirm-kill-emacs 'yes-or-no-p))
-
 ;; Disable blinking cursor
 (blink-cursor-mode 0)
 
@@ -87,6 +82,8 @@ With argument ARG, do this that many times."
 
 ;; OS X specific configuration
 (when (eq system-type 'darwin)
+
+  ;; Set appropriate keybindings
   (global-set-key [wheel-up] 'previous-line)
   (global-set-key [wheel-down] 'next-line)
   (setq mac-option-modifier 'meta)
@@ -109,8 +106,25 @@ With argument ARG, do this that many times."
   (global-set-key (kbd "s-t") 'persp-switch)
   (global-set-key (kbd "s-w") 'persp-kill))
 
+
 ;; If you want to highlight the line containing your cursor
 (add-hook 'prog-mode-hook 'hl-line-mode)
 (setq hl-line-sticky-flag nil)
+
+;; ;; org-mode config
+;; ;; I use M-<arrow> for word navigation, org uses it for header change by default
+;; (define-key org-mode-map (kbd "M-<right>") nil)
+;; (define-key org-mode-map (kbd "M-<left>") nil)
+
+;; ;; Provide reasonable text wrapping
+;; (setq org-startup-truncated t)
+;; (add-hook 'org-mode-hook 'visual-line-mode)
+
+(defun toggle-font-size ()
+  (interactive)
+  (set-face-attribute 'default (selected-frame) :height (if (eq (face-attribute 'default :height) 160) 300 160)))
+
+(defun display-startup-echo-area-message ()
+  (message "Welcome back, Will! :-)"))
 
 (provide 'config-misc)

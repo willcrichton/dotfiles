@@ -150,8 +150,8 @@
     (eshell/cd (concat "/ssh:" name ":~")))
 
   (defun eshell-curr-name ()
-    (if (boundp 'persp-curr)
-        (concat "*eshell-" (persp-name persp-curr) "*")
+    (if (fboundp 'persp-curr)
+        (concat "*eshell-" (persp-name (persp-curr)) "*")
       "*eshell*"))
 
   ;; Workspace management

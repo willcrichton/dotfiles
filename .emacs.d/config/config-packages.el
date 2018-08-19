@@ -112,16 +112,79 @@
 
 ;; Language-specific syntax highlighting
 (use-package scss-mode    :mode ("\\.scss$"   . scss-mode))
-(use-package rust-mode    :mode ("\\.rs$"     . rust-mode))
+(use-package rust-mode
+  :mode ("\\.rs$" . rust-mode)
+  :config
+  (progn
+    (setq rust-indent-offset 2)))
+
 (use-package go-mode      :mode ("\\.go$"     . go-mode))
-(use-package haskell-mode :mode ("\\.hs$"     . haskell-mode))
-(use-package tuareg
-  :mode ("\\.mli?$"   . tuareg-mode)
-  :bind (("C-c C-t" . tuareg-eval-region)))
 (use-package web-mode     :mode ("\\.((html)|(jsx?)|(php))$" . web-mode))
 (use-package yaml-mode)
 (use-package toml-mode)
 (use-package markdown-mode)
+(use-package racket-mode
+  :mode ("\\.rkt$" . racket-mode)
+  :config (setq racket-program "/Applications/Racket v6.90.0.901/bin/racket"))
+
+(use-package haskell-mode
+  :mode
+  ("\\.hs$"     . haskell-mode)
+  :config
+  (progn
+    (use-package intero :config (add-hook 'haskell-mode-hook 'intero-mode))
+    (use-package hindent
+      :config
+      (progn
+        (setq hindent-extra-args '())
+        (add-hook 'haskell-mode-hook #'hindent-mode)))))
+
+;; (use-package haskell-mode
+;;   :mode ("\\.hs$"     . haskell-mode)
+;;   :bind (("C-c C-l" . haskell-process-load-or-reload)
+;;          ("C-c C-z" . haskell-interactive-switch)
+;;          ("C-c C-t" . haskell-process-do-type))
+;;   :config
+;;   (progn
+;;     (custom-set-variables '(haskell-process-type 'cabal-repl))
+;;     (let ((my-cabal-path (expand-file-name "~/.cabal/bin")))
+;;       (setenv "PATH" (concat my-cabal-path path-separator (getenv "PATH")))
+;;       (add-to-list 'exec-path my-cabal-path))
+;;     (use-package hindent
+;;       :config (add-hook 'haskell-mode-hook #'hindent-mode))))
+
+(use-package tuareg
+  :mode ("\\.mli?$"   . tuareg-mode)
+  :bind (("C-c C-t" . tuareg-eval-region)))
+
+(use-package reason-mode
+  :mode ("\\.re$" . reason-mode)
+  :init
+  (progn
+    (defun shell-cmd (cmd)
+      "Returns the stdout output of a shell command or nil if the command returned
+   an error"
+      (car (ignore-errors (apply 'process-lines (split-string cmd)))))
+
+    (let* ((refmt-bin (or (shell-cmd "refmt ----where")
+                          (shell-cmd "which refmt")))
+           (merlin-bin (or (shell-cmd "ocamlmerlin ----where")
+                           (shell-cmd "which ocamlmerlin")))
+           (merlin-base-dir (when merlin-bin
+                              (replace-regexp-in-string "bin/ocamlmerlin$" "" merlin-bin))))
+      ;; Add npm merlin.el to the emacs load path and tell emacs where to find ocamlmerlin
+      (when merlin-bin
+        (add-to-list 'load-path (concat merlin-base-dir "share/emacs/site-lisp/"))
+        (setq merlin-command merlin-bin))
+
+      (when refmt-bin
+        (setq refmt-command refmt-bin))))
+  :config
+  (progn
+    (add-hook 'reason-mode-hook (lambda ()
+                                  (add-hook 'before-save-hook 'refmt-before-save)
+                                  (merlin-mode)))))
+
 (use-package sml-mode
   :mode ("\\.sml$" . sml-mode)
   :config (setq sml-indent-level 2))
@@ -141,7 +204,7 @@
   :config (setq lua-indent-level 2))
 
 
-;; Language-specific extensions
+;;;; Language-specific extensions
 
 ;; Python auto-formatting
 (use-package py-yapf
