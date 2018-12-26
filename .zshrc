@@ -13,6 +13,7 @@ export ALTERNATE_EDITOR=''
 
 
 ## Misc exports/aliases
+export PATH=$HOME/.local/bin:$PATH # Add locally installed binaries to path
 export TERM="xterm-256color" # use all 256 colors
 alias m='make -j'
 alias dc=docker-compose
