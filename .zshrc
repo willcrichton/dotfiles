@@ -20,3 +20,5 @@ alias dc=docker-compose
 alias nd=nvidia-docker
 alias ndc=nvidia-docker-compose
 alias kc=kubectl
+
+source $HOME/.base/bin/activate
