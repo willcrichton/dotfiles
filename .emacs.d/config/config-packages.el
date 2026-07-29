@@ -83,25 +83,26 @@
   :ensure nil
   :hook (prog-mode . eglot-ensure)
   :custom
-  (eglot-code-action-indications nil))
+  (eglot-code-action-indications nil)) ; Disable lightning indicator
 
+;; Framework for workspaces, separates each set of buffers
 (use-package tabspaces
   :custom
-  (tabspaces-use-filtered-buffers-as-default t)
-  (tabspaces-include-buffers nil)
+  (tabspaces-use-filtered-buffers-as-default t) ; Keep each tabspaces' buffer list isolated
+  (tabspaces-include-buffers nil)               ; Don't include the global scratch buffer in each list
   (tabspaces-default-tab "Home")
   :init (tabspaces-mode)
   :config
-  (setq enable-recursive-minibuffers t)
-  (setq tab-bar-show nil)
-  (project-known-project-roots))
+  (setq enable-recursive-minibuffers t)         ; Allows the simultanous use of the minibuffer between two tabspaces
+  (setq tab-bar-show nil)                       ; Don't show the upper tab bar by default
+  (project-known-project-roots))                ; HACK: forces project.el to generate some intermediates
 
+;; Dired improvement for directory tree browsing
 (use-package dirvish
   :init
   (dirvish-override-dired-mode)
-  :bind (("s-b" . dirvish-side)
-	 :map dirvish-mode-map
-         ("TAB" . dirvish-subtree-toggle))
+  :bind (:map dirvish-mode-map
+              ("TAB" . dirvish-subtree-toggle))
   :config
   (require 'dirvish-side)
   (require 'dirvish-subtree)
@@ -109,12 +110,13 @@
   (setq dirvish-use-header-line nil)
   (setq dired-free-space nil)
   (setq dired-listing-switches "-lA")
-  (dirvish-side-follow-mode 1)
+  (dirvish-side-follow-mode 1)        ; Automatically update dirvish as files are opened
   :custom
   (dirvish-side-auto-expand t)
   (dirvish-attributes '(nerd-icons file-size vc-state git-msg subtree-state))
-  (dirvish-side-attributes '(nerd-icons file-size vc-state subtree-state)))
+  (dirvish-side-attributes '(nerd-icons file-size vc-state subtree-state))) ; Don't show git-msg in sidebar
 
+;; For MacOS, configure dired to use GNU ls so it accepts all dired options
 (when (executable-find "gls")
   (setq insert-directory-program "gls"
         dired-use-ls-dired t))
@@ -128,7 +130,12 @@
 	   ("M-/" . xref-find-references)
 	   ("M--" . xref-go-back)
 	   ("s-p" . project-find-file)
-	   ("s-o" . ide-open-workspace))
+	   ("s-o" . ide-open-workspace)
+	   ("s-{" . tab-line-switch-to-prev-tab)
+	   ("s-}" . tab-line-switch-to-next-tab)
+	   ("C-<tab>" . tab-bar-switch-to-next-tab)
+	   ("C-S-<tab>" . tab-bar-switch-to-prev-tab)
+	   ("s-b" . dirvish-side)
 
 ;; (use-package project
 ;;   :config
@@ -137,10 +144,6 @@
 (use-package magit :bind (("C-c C-g" . magit-status)))
 
 (defun ide--name-default-tab (&rest _)
-  "Give the initial, unnamed tab an explicit name.
-The first tab of a frame never runs through
-`tab-bar-tab-post-open-functions', so without this it stays an
-unnamed catch-all that accumulates every startup buffer."
   (unless (cdr (assq 'explicit-name (tab-bar--current-tab)))
     (tab-bar-rename-tab tabspaces-default-tab)))
 
@@ -148,9 +151,6 @@ unnamed catch-all that accumulates every startup buffer."
 (ide--name-default-tab)
 
 (defun ide-workspace-ibuffer ()
-  "Like `ibuffer', but scoped to the current tabspace.
-`list-buffers'/`ibuffer' walk the global buffer list and know
-nothing about tab-local buffer lists."
   (interactive)
   (ibuffer nil "*Workspace Buffers*"
            '((predicate . (tabspaces--local-buffer-p (current-buffer))))))
@@ -196,24 +196,11 @@ nothing about tab-local buffer lists."
   (let* ((dir (file-name-as-directory (expand-file-name dir)))
          (tabspaces-project-switch-commands #'ignore))
     (tabspaces-open-or-create-project-and-workspace dir)
-    ;; `tabspaces-open-or-create-project-and-workspace' let-binds
-    ;; `tab-bar-new-tab-choice' to the *global* *scratch* internally, so we
-    ;; can't pre-bind it -- swap the buffer out afterwards instead.  Sharing
-    ;; one *scratch* means sharing one `default-directory', which makes
-    ;; project-find-file/grep/eglot in a fresh tab resolve against whatever
-    ;; workspace was opened last.
-    ;;
-    ;; Use `switch-to-buffer', not `set-window-buffer': only the former
-    ;; records the buffer in the frame's `buffer-list', which is what
-    ;; tabspaces filters on.
     (let ((scratch (get-buffer "*scratch*")))
       (when (eq (window-buffer (selected-window)) scratch)
         (switch-to-buffer (ide--workspace-scratch dir) nil t)
-        ;; ...and evict the global one that `tab-bar-new-tab' just added.
         (set-frame-parameter nil 'buffer-list
                              (delq scratch (frame-parameter nil 'buffer-list)))))
-    ;; Only lay out a tab we just created; re-opening an existing workspace
-    ;; must not `delete-other-windows' on top of its saved layout.
     (unless (dirvish-side--session-visible-p)
       (ide-workspace-layout dir))
     (ide--start-lsp dir)))

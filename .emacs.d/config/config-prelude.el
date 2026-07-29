@@ -34,16 +34,11 @@
 (global-set-key (kbd "C-x k") 'kill-current-buffer)
 
 (global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
-(global-set-key (kbd "C-c g") 'rgrep)
 
 (global-set-key (kbd "s-<left>") 'windmove-left)
 (global-set-key (kbd "s-<right>") 'windmove-right)
 (global-set-key (kbd "s-<up>") 'windmove-up)
 (global-set-key (kbd "s-<down>") 'windmove-down)
-(global-set-key (kbd "s-{") 'tab-line-switch-to-prev-tab)
-(global-set-key (kbd "s-}") 'tab-line-switch-to-next-tab)
-(global-set-key (kbd "C-<tab>") 'tab-bar-switch-to-next-tab)
-(global-set-key (kbd "C-S-<tab>") 'tab-bar-switch-to-prev-tab)
 
 (defun switch-to-eshell ()
   (interactive)
