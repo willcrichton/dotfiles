@@ -1,223 +1,257 @@
-;;; Set up package management, adding various sources to search
-(package-initialize nil)
-(add-to-list
- 'package-archives
- '("melpa-stable" . "http://stable.melpa.org/packages/"))
+;;; -*- lexical-binding: t -*-
 
-;; Get the "use-package" package for simple package configuration
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-(setq use-package-verbose t)
-(setq use-package-always-ensure t)
-(require 'use-package)
-(setq load-prefer-newer t)
+;; == FIRST-TIME INSTALL COMMANDS ==
+;; (treesit-auto-install-all)
+;; (nerd-icons-install-fonts)
 
-;; Company-mode for autocompletion
-(use-package company
-  :demand t
-  :bind (("C-." . company-complete))
-  :diminish company-mode)
+(require 'package)
 
-;; Helm for file navigation and autocomplete UI
-(use-package helm
-  :demand t
-  :diminish helm-mode
-  :bind (("M-x" . helm-M-x)
-         ("C-x b" . helm-mini)
-         ("C-x C-f" . helm-find-files)
-         ("C-h SPC" . helm-all-mark-rings)
-         ("M-y" . helm-show-kill-ring))
-  :config
-  (progn
-    (bind-key "<tab>" 'helm-execute-persistent-action helm-map)
-    (bind-key "C-i" 'helm-execute-persistent-action helm-map)
-    (bind-key "C-z" 'helm-select-action helm-map)
-    (setq helm-google-suggest-use-curl-p t
-          helm-quick-update t
-          helm-split-window-in-side-p t
-          helm-scroll-amount 4
-          helm-buffers-fuzzy-matching t
-          helm-recentf-fuzzy-match t
-          helm-M-x-fuzzy-match t)
-    (helm-mode)))
-
-;; Search through uses of a phrase in the same file
-;; M-x helm-swoop
-(use-package helm-swoop)
-
-;; Projectile for large project utilities
-(use-package projectile
-  :demand t
-  :diminish projectile-mode
-  :config
-  (progn
-    (projectile-global-mode t)
-    (setq projectile-completion-system 'helm)
-    (setq projectile-enable-caching t)))
-
-(use-package helm-projectile
-  :bind (("C-x f" . helm-projectile-find-file)
-         ("C-x g" . helm-projectile-grep))
-  :config (helm-projectile-on))
-
-;; Paradox for better package viewing (use M-x paradox-list-packages)
-(use-package paradox :config (setq paradox-execute-asynchronously t))
-
-;; Better text replacement
-(use-package visual-regexp
-  :bind (("M-%" . vr/query-replace))
-  :config
-  (use-package visual-regexp-steroids))
-
-;; Magit for git integrated to emacs
-(use-package magit :bind (("C-c C-g" . magit-status)))
-
-;; Auto-upload gists to Github -- see https://github.com/defunkt/gist.el
-(use-package gist)
-
-;; For fun looking delimeters
-(use-package rainbow-delimiters
-  :demand t
-  :config (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
-
-;; Load in environment variables to shells we use
 (use-package exec-path-from-shell
-  :config
-  (when (memq window-system '(mac ns x))
-    (mapc 'exec-path-from-shell-copy-env
-          '("LD_LIBRARY_PATH" "DYLD_LIBRARY_PATH" "CAML_LD_LIBRARY_PATH"))
+  :init
+  (when (daemonp)
     (exec-path-from-shell-initialize)))
 
-;; Go back to where you were if you close a file
-(use-package saveplace :config (setq-default save-place t))
+;; ======= COMPLETION ======
 
-;; Highlight lines over N characters
-(use-package whitespace
-  :diminish whitespace-mode
-  :config
-  (progn
-    (setq whitespace-line-column 120)
-    (setq whitespace-style '(face lines-tail))
-    (add-hook 'prog-mode-hook 'whitespace-mode)))
+;; MELPA isn't searched by default, so we need to add it to the archive list.
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-;; Language-specific syntax highlighting
-(use-package scss-mode    :mode ("\\.scss$"   . scss-mode))
-(use-package rust-mode
-  :mode ("\\.rs$" . rust-mode)
-  :config
-  (progn
-    (setq rust-indent-offset 2)))
+;; Fetch the latest package contents from ELPA / MELPA
+(unless package-archive-contents
+  (package-refresh-contents))
 
-(use-package go-mode      :mode ("\\.go$"     . go-mode))
-(use-package web-mode     :mode ("\\.((html)|(jsx?)|(php))$" . web-mode))
-(use-package yaml-mode)
-(use-package toml-mode)
-(use-package markdown-mode)
-(use-package racket-mode
-  :mode ("\\.rkt$" . racket-mode)
-  :config (setq racket-program "/Applications/Racket v6.90.0.901/bin/racket"))
+;; :ensure t by default.
+;; explicit :ensure nil refers to built-in packages.
+(setq use-package-always-ensure t)
 
-(use-package haskell-mode
-  :mode
-  ("\\.hs$"     . haskell-mode)
-  :config
-  (progn
-    (use-package intero :config (add-hook 'haskell-mode-hook 'intero-mode))
-    (use-package hindent
-      :config
-      (progn
-        (setq hindent-extra-args '())
-        (add-hook 'haskell-mode-hook #'hindent-mode)))))
-
-;; (use-package haskell-mode
-;;   :mode ("\\.hs$"     . haskell-mode)
-;;   :bind (("C-c C-l" . haskell-process-load-or-reload)
-;;          ("C-c C-z" . haskell-interactive-switch)
-;;          ("C-c C-t" . haskell-process-do-type))
-;;   :config
-;;   (progn
-;;     (custom-set-variables '(haskell-process-type 'cabal-repl))
-;;     (let ((my-cabal-path (expand-file-name "~/.cabal/bin")))
-;;       (setenv "PATH" (concat my-cabal-path path-separator (getenv "PATH")))
-;;       (add-to-list 'exec-path my-cabal-path))
-;;     (use-package hindent
-;;       :config (add-hook 'haskell-mode-hook #'hindent-mode))))
-
-(use-package tuareg
-  :mode ("\\.mli?$"   . tuareg-mode)
-  :bind (("C-c C-t" . tuareg-eval-region)))
-
-(use-package reason-mode
-  :mode ("\\.re$" . reason-mode)
+;; Framework for a block completion buffer
+(use-package vertico
   :init
-  (progn
-    (defun shell-cmd (cmd)
-      "Returns the stdout output of a shell command or nil if the command returned
-   an error"
-      (car (ignore-errors (apply 'process-lines (split-string cmd)))))
+  (setq vertico-resize t)              ; resize buffer height to match results
+  (setq vertico-multiform-categories   ; per-completion-type configuration
+	'((file grid reverse indexed (:keymap . vertico-directory-map))
+	  (consult-locate buffer)
+	  (consult-grep buffer)
+	  (minor-mode reverse)
+	  (imenu buffer)))
+  (vertico-mode)                       ; enable vertico
+  (vertico-mouse-mode)                 ; allow mouse selection
+  (vertico-multiform-mode)             ; allow per-completion-type config
+  (savehist-mode))                     ; persist completion history across sessions
 
-    (let* ((refmt-bin (or (shell-cmd "refmt ----where")
-                          (shell-cmd "which refmt")))
-           (merlin-bin (or (shell-cmd "ocamlmerlin ----where")
-                           (shell-cmd "which ocamlmerlin")))
-           (merlin-base-dir (when merlin-bin
-                              (replace-regexp-in-string "bin/ocamlmerlin$" "" merlin-bin))))
-      ;; Add npm merlin.el to the emacs load path and tell emacs where to find ocamlmerlin
-      (when merlin-bin
-        (add-to-list 'load-path (concat merlin-base-dir "share/emacs/site-lisp/"))
-        (setq merlin-command merlin-bin))
+;; Completion context for some built-in types
+(use-package marginalia :init (marginalia-mode))
 
-      (when refmt-bin
-        (setq refmt-command refmt-bin))))
+;; Better fuzzy matching for vertico
+(use-package orderless
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles partial-completion))))
+  (completion-category-defaults nil)
+  (completion-pcm-leading-wildcard t))
+
+;; Framework for an inline completion buffer
+(use-package corfu :init (global-corfu-mode))
+
+(use-package consult
+  :bind (("C-x b" . consult-buffer)
+	 ("C-x g" . consult-ripgrep)
+	 ("C-x l" . consult-locate))
   :config
-  (progn
-    (add-hook 'reason-mode-hook (lambda ()
-                                  (add-hook 'before-save-hook 'refmt-before-save)
-                                  (merlin-mode)))))
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+  (setq consult-buffer-list-function #'tabspaces--buffer-list)
+  (setq consult-narrow-key "<"))
 
-(use-package sml-mode
-  :mode ("\\.sml$" . sml-mode)
-  :config (setq sml-indent-level 2))
-(use-package c++-mode
+(use-package embark
+  :bind (("M-."   . embark-dwim)      ; the "right-click menu"
+         ("M-;"   . embark-act)       ; act with the top default action
+         ("C-h B" . embark-bindings)) ; discover what's available
+  :config
+  (setq prefix-help-command #'embark-prefix-help-command))
+
+(use-package embark-consult
+  :after (embark consult)
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
+
+;; ======= WORKSPACES ======
+
+;; Handles LSP integration, configure it to automatically run for any source code.
+;; note that eglot integrates w/ project.el to find project roots
+(use-package eglot
   :ensure nil
-  :mode ("\\.h$"   . c++-mode)
-  :mode ("\\.inl$" . c++-mode)
+  :hook (prog-mode . eglot-ensure)
+  :custom
+  (eglot-code-action-indications nil))
+
+(use-package tabspaces
+  :custom
+  (tabspaces-use-filtered-buffers-as-default t)
+  (tabspaces-include-buffers nil)
+  (tabspaces-default-tab "Home")
+  :init (tabspaces-mode)
   :config
-  (progn
-    (setq c-default-style "k&r")
-    (c-set-offset 'innamespace 0) ; No indent in namespace
-    (c-set-offset 'arglist-intro '+)
-    (c-set-offset 'arglist-close 0)
-    (setq c-basic-offset 2)))
-(use-package lua-mode
-  :bind (("C-c C-r" . lua-send-region))
-  :config (setq lua-indent-level 2))
+  (setq enable-recursive-minibuffers t)
+  (setq tab-bar-show nil)
+  (project-known-project-roots))
 
-
-;;;; Language-specific extensions
-
-;; Python auto-formatting
-(use-package py-yapf
-  :config (add-hook 'python-mode-hook 'py-yapf-enable-on-save))
-
-;; Utilities for OCaml
-(use-package ocp-indent
-  :config (setq ocp-indent-config "JaneStreet"))
-(use-package merlin
-  :diminish merlin-mode
+(use-package dirvish
+  :init
+  (dirvish-override-dired-mode)
+  :bind (("s-b" . dirvish-side)
+	 :map dirvish-mode-map
+         ("TAB" . dirvish-subtree-toggle))
   :config
-  (progn
-    (let ((opam-share (ignore-errors (car (process-lines "opam" "config" "var" "share")))))
-      (when (and opam-share (file-directory-p opam-share))
-        ;; Register Merlin
-        (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
-        (autoload 'merlin-mode "merlin" nil t nil)
-        ;; Automatically start it in OCaml buffers
-        (add-hook 'tuareg-mode-hook 'merlin-mode t)
-        (add-hook 'caml-mode-hook 'merlin-mode t)
-        ;; Use opam switch to lookup ocamlmerlin binary
-        (setq merlin-command 'opam)))))
+  (require 'dirvish-side)
+  (require 'dirvish-subtree)
+  (setq dirvish-side-window-parameters '((no-delete-other-windows . t)))
+  (setq dirvish-use-header-line nil)
+  (setq dired-free-space nil)
+  (setq dired-listing-switches "-lA")
+  (dirvish-side-follow-mode 1)
+  :custom
+  (dirvish-side-auto-expand t)
+  (dirvish-attributes '(nerd-icons file-size vc-state git-msg subtree-state))
+  (dirvish-side-attributes '(nerd-icons file-size vc-state subtree-state)))
 
+(when (executable-find "gls")
+  (setq insert-directory-program "gls"
+        dired-use-ls-dired t))
+
+(use-package consult-eglot
+  :after consult
+  :bind ("s-t" . consult-eglot-symbols))
+
+;; familiar IDE keybindings
+(bind-keys ("M-," . eglot-find-typeDefinition)
+	   ("M-/" . xref-find-references)
+	   ("M--" . xref-go-back)
+	   ("s-p" . project-find-file)
+	   ("s-o" . ide-open-workspace))
+
+;; (use-package project
+;;   :config
+;;   (setq project-switch-commands 'project-find-file))
+
+(use-package magit :bind (("C-c C-g" . magit-status)))
+
+(defun ide--name-default-tab (&rest _)
+  "Give the initial, unnamed tab an explicit name.
+The first tab of a frame never runs through
+`tab-bar-tab-post-open-functions', so without this it stays an
+unnamed catch-all that accumulates every startup buffer."
+  (unless (cdr (assq 'explicit-name (tab-bar--current-tab)))
+    (tab-bar-rename-tab tabspaces-default-tab)))
+
+(add-hook 'server-after-make-frame-hook #'ide--name-default-tab)
+(ide--name-default-tab)
+
+(defun ide-workspace-ibuffer ()
+  "Like `ibuffer', but scoped to the current tabspace.
+`list-buffers'/`ibuffer' walk the global buffer list and know
+nothing about tab-local buffer lists."
+  (interactive)
+  (ibuffer nil "*Workspace Buffers*"
+           '((predicate . (tabspaces--local-buffer-p (current-buffer))))))
+
+(global-set-key (kbd "C-x C-b") #'ide-workspace-ibuffer)
+
+(defun ide-workspace-layout (&optional path)
+  (interactive)
+  (delete-other-windows)
+  (save-selected-window
+    (unless (dirvish-side--session-visible-p)
+      (dirvish-side path))))
+
+(defun ide--workspace-scratch (dir)
+  "Return a scratch buffer local to the workspace rooted at DIR."
+  (let ((buf (get-buffer-create
+              (format "*scratch: %s*"
+                      (file-name-nondirectory (directory-file-name dir))))))
+    (with-current-buffer buf
+      (setq-local default-directory dir)
+      (unless (derived-mode-p 'lisp-interaction-mode)
+        (lisp-interaction-mode)))
+    buf))
+
+(defvar ide-workspace-lsp-modes
+  '(("Cargo.toml"     . rustic-mode)
+    ("pyproject.toml" . python-ts-mode)))
+
+(defun ide--start-lsp (dir)
+  "Start eglot for the workspace rooted at DIR, if we recognize it."
+  (when-let* ((cell (seq-find (lambda (c) (file-exists-p (expand-file-name (car c) dir)))
+                              ide-workspace-lsp-modes))
+              (mode (cdr cell)))
+    (with-temp-buffer
+      (setq-local default-directory dir)
+      (let ((major-mode mode))                       ; pretend to be a Rust buffer
+        (unless (eglot-current-server)
+          (apply #'eglot (let ((buffer-file-name (expand-file-name "x" dir)))
+                           (eglot--guess-contact))))))))
+
+(defun ide-open-workspace (dir)
+  (interactive (list (read-directory-name "Open workspace: ")))
+  (let* ((dir (file-name-as-directory (expand-file-name dir)))
+         (tabspaces-project-switch-commands #'ignore))
+    (tabspaces-open-or-create-project-and-workspace dir)
+    ;; `tabspaces-open-or-create-project-and-workspace' let-binds
+    ;; `tab-bar-new-tab-choice' to the *global* *scratch* internally, so we
+    ;; can't pre-bind it -- swap the buffer out afterwards instead.  Sharing
+    ;; one *scratch* means sharing one `default-directory', which makes
+    ;; project-find-file/grep/eglot in a fresh tab resolve against whatever
+    ;; workspace was opened last.
+    ;;
+    ;; Use `switch-to-buffer', not `set-window-buffer': only the former
+    ;; records the buffer in the frame's `buffer-list', which is what
+    ;; tabspaces filters on.
+    (let ((scratch (get-buffer "*scratch*")))
+      (when (eq (window-buffer (selected-window)) scratch)
+        (switch-to-buffer (ide--workspace-scratch dir) nil t)
+        ;; ...and evict the global one that `tab-bar-new-tab' just added.
+        (set-frame-parameter nil 'buffer-list
+                             (delq scratch (frame-parameter nil 'buffer-list)))))
+    ;; Only lay out a tab we just created; re-opening an existing workspace
+    ;; must not `delete-other-windows' on top of its saved layout.
+    (unless (dirvish-side--session-visible-p)
+      (ide-workspace-layout dir))
+    (ide--start-lsp dir)))
+
+;; ======= LANGUAGES ======
+
+(use-package treesit-auto
+  :custom
+  (treesit-auto-install 'prompt)
+  (treesit-enabled-modes t)
+  (treesit-font-lock-level 4)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all))
+
+(use-package rustic
+  :config
+  (setq rustic-format-on-save nil)
+  (setq rustic-lsp-client 'eglot)
+  :custom
+  (rustic-cargo-use-last-stored-arguments t))
+
+;; ======= UTILITIES ======
+
+(use-package solarized-theme
+  :config (load-theme 'solarized-light t))
+
+(use-package doom-modeline
+  :init (doom-modeline-mode 1)
+  :config
+  (set-face-attribute 'mode-line nil          :strike-through nil :underline nil :overline nil)
+  (set-face-attribute 'mode-line-active nil   :strike-through nil :underline nil :overline nil)
+  (set-face-attribute 'mode-line-inactive nil :strike-through nil :underline nil :overline nil))
+
+(use-package pcre2el)
+
+(use-package visual-regexp
+  :after pcre2el
+  :init (setq vr/engine 'pcre2el)
+  :bind (("M-%" . vr/query-replace)))
 
 (provide 'config-packages)
